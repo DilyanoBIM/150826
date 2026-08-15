@@ -1,69 +1,63 @@
-<!-- Memuat Library SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- resources/views/network/sweetalert.blade.php -->
+<?php
+    $flashSuccess = session('success');
+    $flashError = session('error');
+    $valErrors = session()->has('errors') ? session('errors')->all() : [];
+?>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         
-        // Objek konfigurasi class Tailwind standar agar seragam & kecil
         const swalCustomClass = {
             popup: 'rounded-2xl shadow-xl pb-4',
-            title: 'text-lg font-bold text-slate-800 pt-2', // Ukuran judul lebih kecil
-            htmlContainer: 'text-sm text-slate-600',        // Ukuran deskripsi text-sm
+            title: 'text-lg font-bold text-slate-800 pt-2',
+            htmlContainer: 'text-sm text-slate-600',
             confirmButton: 'text-sm px-5 py-2 rounded-lg font-semibold',
             cancelButton: 'text-sm px-5 py-2 rounded-lg font-semibold'
         };
 
-        // =========================================================================
-        // 1. AUTO-CATCH LARAVEL FLASH SESSIONS
-        // =========================================================================
-        
-        @if(session('success'))
+        const flashSuccess = <?php echo json_encode($flashSuccess); ?>;
+        const flashError = <?php echo json_encode($flashError); ?>;
+        const validationErrors = <?php echo json_encode($valErrors); ?>;
+
+        if (flashSuccess) {
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil!',
-                text: '{!! addslashes(session('success')) !!}',
+                text: flashSuccess,
                 showConfirmButton: false,
                 timer: 3000,
                 timerProgressBar: true,
-                width: '320px', // Membatasi lebar popup
+                width: '320px',
                 customClass: swalCustomClass
             });
-        @endif
+        }
 
-        @if(session('error'))
+        if (flashError) {
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal!',
-                text: '{!! addslashes(session('error')) !!}',
+                text: flashError,
                 confirmButtonColor: '#0284c7',
-                width: '320px', // Membatasi lebar popup
+                width: '320px',
                 customClass: swalCustomClass
             });
-        @endif
+        }
 
-        // Menangkap error validasi form
-        @if($errors->any())
+        if (validationErrors && validationErrors.length > 0) {
+            const errorHtml = '<ul class="text-left text-sm text-red-600 space-y-1">' + 
+                              validationErrors.map(e => '<li>- ' + e + '</li>').join('') + 
+                              '</ul>';
             Swal.fire({
                 icon: 'error',
                 title: 'Terjadi Kesalahan',
-                html: `
-                    <ul class="text-left text-sm text-red-600 space-y-1">
-                        @foreach ($errors->all() as $error)
-                            <li>- {{ $error }}</li>
-                        @endforeach
-                    </ul>
-                `,
+                html: errorHtml,
                 confirmButtonColor: '#0284c7',
-                width: '360px', // Sedikit lebih lebar untuk memuat list error
+                width: '360px',
                 customClass: swalCustomClass
             });
-        @endif
+        }
 
-        // =========================================================================
-        // 2. SISTEM PEMANGGILAN DINAMIS MELALUI HTML CLASS
-        // =========================================================================
-        
-        // A. Class 'swal-fire' (Untuk alert biasa)
         document.querySelectorAll('.swal-fire').forEach(button => {
             button.addEventListener('click', function() {
                 Swal.fire({
@@ -71,13 +65,12 @@
                     title: this.dataset.title || 'Informasi',
                     text: this.dataset.text || '',
                     confirmButtonColor: '#0284c7',
-                    width: '320px', // Membatasi lebar popup
+                    width: '320px',
                     customClass: swalCustomClass
                 });
             });
         });
 
-        // B. Class 'swal-confirm' (Untuk konfirmasi form submit)
         document.querySelectorAll('.swal-confirm').forEach(form => {
             form.addEventListener('submit', function(e) {
                 e.preventDefault(); 
@@ -91,7 +84,7 @@
                     cancelButtonColor: '#94a3b8',
                     confirmButtonText: 'Ya, Lanjutkan!',
                     cancelButtonText: 'Batal',
-                    width: '340px', // Lebar yang pas untuk konfirmasi dengan 2 tombol
+                    width: '340px',
                     customClass: swalCustomClass
                 }).then((result) => {
                     if (result.isConfirmed) {
@@ -102,12 +95,22 @@
         });
     });
 
-    // =========================================================================
-    // 3. SISTEM PEMANGGILAN DINAMIS MELALUI JAVASCRIPT CLASS/OBJECT
-    // =========================================================================
+    // Deklarasi Global Object & Kamus Pesan (Message Dictionary)
     window.ToastAlert = {
         success: (msg) => Swal.fire({ icon: 'success', title: 'Berhasil', text: msg, showConfirmButton: false, timer: 3000, width: '320px', customClass: { popup: 'rounded-2xl shadow-xl pb-4', title: 'text-lg font-bold pt-2', htmlContainer: 'text-sm text-slate-600' } }),
+        
         error: (msg) => Swal.fire({ icon: 'error', title: 'Gagal', text: msg, confirmButtonColor: '#0284c7', width: '320px', customClass: { popup: 'rounded-2xl shadow-xl pb-4', title: 'text-lg font-bold pt-2', htmlContainer: 'text-sm text-slate-600', confirmButton: 'text-sm px-5 py-2 rounded-lg font-semibold' } }),
-        info: (msg) => Swal.fire({ icon: 'info', title: 'Info', text: msg, confirmButtonColor: '#0284c7', width: '320px', customClass: { popup: 'rounded-2xl shadow-xl pb-4', title: 'text-lg font-bold pt-2', htmlContainer: 'text-sm text-slate-600', confirmButton: 'text-sm px-5 py-2 rounded-lg font-semibold' } })
+        
+        info: (msg) => Swal.fire({ icon: 'info', title: 'Info', text: msg, confirmButtonColor: '#0284c7', width: '320px', customClass: { popup: 'rounded-2xl shadow-xl pb-4', title: 'text-lg font-bold pt-2', htmlContainer: 'text-sm text-slate-600', confirmButton: 'text-sm px-5 py-2 rounded-lg font-semibold' } }),
+        
+        toast: (msg, type = 'success') => Swal.fire({ toast: true, position: 'bottom-end', icon: type, title: msg, showConfirmButton: false, timer: 3000, timerProgressBar: true }),
+
+        // Kamus pesan global agar reusable di semua komponen
+        msg: {
+            deletedSuccess: 'Deleted Success',
+            deletedFailed: 'Deleted Failed',
+            savedSuccess: 'Saved Success',
+            savedFailed: 'Saved Failed'
+        }
     };
 </script>

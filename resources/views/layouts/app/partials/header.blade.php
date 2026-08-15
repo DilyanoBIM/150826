@@ -25,7 +25,7 @@
         </span>
         <input 
             type="text" 
-            placeholder="Cari transaksi, laporan, atau data..." 
+            placeholder="Cari Module / Menu..." 
             class="w-full pl-8 pr-3 py-1 bg-slate-50 border border-slate-200 rounded-md text-[11px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/20 transition-all h-7"
         >
     </div>
@@ -36,12 +36,16 @@
         
         <form action="{{ route('logout') }}" method="POST" x-data="{ isLoggingOut: false }" @submit="isLoggingOut = true">
             @csrf
-            <button type="submit" :disabled="isLoggingOut" class="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-md text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed h-7">
-                <svg x-show="isLoggingOut" style="display: none;" class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span x-text="isLoggingOut ? 'Keluar...' : 'Keluar'"></span>
+            <button type="submit" 
+                    :disabled="isLoggingOut" 
+                    class="flex items-center justify-center px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-md text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed h-7 min-w-[75px]">
+                
+                <!-- Teks Normal -->
+                <span x-show="!isLoggingOut">Keluar</span>
+
+                <!-- Komponen Loading Spinner -->
+                <x-app.ui.loading-spinner x-show="isLoggingOut" style="display: none;" iconClass="h-3 w-3" />
+                
             </button>
         </form>
     </div>
