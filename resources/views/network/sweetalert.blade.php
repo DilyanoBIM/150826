@@ -107,10 +107,40 @@
 
         // Kamus pesan global agar reusable di semua komponen
         msg: {
-            deletedSuccess: 'Deleted Success',
-            deletedFailed: 'Deleted Failed',
-            savedSuccess: 'Saved Success',
-            savedFailed: 'Saved Failed'
+            deletedSuccess: 'Data berhasil dihapus.',
+            deletedFailed: 'Gagal menghapus data.',
+            savedSuccess: 'Data berhasil disimpan.',
+            savedFailed: 'Gagal menyimpan data.',
+            refreshSuccess: 'Refresh Success.',
+            refreshFailed: 'Gagal memperbarui data.'
         }
     };
+
+    // --- REUSABLE ALPINE COMPONENT ---
+    // Logika asinkronus (loading & try-catch) yang bisa dipakai berulang kali di halaman mana saja.
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('asyncAction', (initialState = {}) => ({
+            isProcessing: false,
+            ...initialState, // Memungkinkan injeksi state lain seperti isOpen (untuk modal)
+            
+            async runAction(actionCallback, successMsg = null, failMsg = null) {
+                this.isProcessing = true;
+                try {
+                    // Jalankan fungsi apapun yang dikirim dari tombol (bisa fetch, dispatch, dll)
+                    await actionCallback();
+                    
+                    if (successMsg && typeof window.ToastAlert !== 'undefined') {
+                        window.ToastAlert.toast(successMsg, 'success');
+                    }
+                } catch (error) {
+                    console.error('Action Error:', error);
+                    if (failMsg && typeof window.ToastAlert !== 'undefined') {
+                        window.ToastAlert.toast(failMsg, 'error');
+                    }
+                } finally {
+                    this.isProcessing = false;
+                }
+            }
+        }));
+    });
 </script>

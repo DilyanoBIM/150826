@@ -30,10 +30,10 @@ class AuthController extends Controller
             'password' => $request->password, 
         ]);
 
-        // 2. MENGGUNAKAN TABEL JOBS: Melempar tugas berat ke background
+        // 2. MENGGUNAKAN REDIS QUEUE: Melempar tugas berat ke antrean background Redis
         ProcessWelcomeSetup::dispatch($user);
 
-        // 3. MENGGUNAKAN TABEL CACHE: Menyimpan jumlah total pendaftar di Cache selama 24 Jam
+        // 3. MENGGUNAKAN REDIS CACHE: Menyimpan jumlah total pendaftar di Cache Redis selama 24 Jam
         Cache::increment('total_registered_users');
 
         return redirect()->route('login')->with('success', 'Pendaftaran berhasil! Sistem sedang menyiapkan lingkungan kerja Anda.');
@@ -56,7 +56,7 @@ class AuthController extends Controller
         if (Auth::attempt($request->only('email', 'password'), $remember)) {
             $request->session()->regenerate();
             
-            // Menyimpan log waktu login terakhir menggunakan Cache Database
+            // Menyimpan log waktu login terakhir menggunakan Cache Redis
             Cache::put('last_login_time_' . Auth::id(), now()->format('d M Y H:i:s'), now()->addDay());
 
             // PERBARUI BARIS INI: Tambahkan with('success', ...)
@@ -72,7 +72,7 @@ class AuthController extends Controller
     {
         Auth::logout();
         
-        // Membersihkan data sesi di tabel sessions
+        // Membersihkan data sesi di Redis Session
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

@@ -7,48 +7,16 @@
     'confirmEvent' => 'confirmed-delete'
 ])
 
-<div x-data="{ 
-        isOpen: false,
-        isDeleting: false,
-        
-        async handleConfirm() {
-            this.isDeleting = true;
-            
-            try {
-                // Dispatch event ke parent/sistem untuk melakukan penghapusan aktual
-                this.$dispatch('{{ $confirmEvent }}');
-                
-                // Simulasi loading sebelum menutup modal (nanti dihapus saat integrasi backend nyata)
-                await new Promise(resolve => setTimeout(resolve, 800));
-                
-                this.isOpen = false;
-                
-                // Reset bulk bar & checkbox selection
-                this.$dispatch('clear-selection');
-                
-                // Mengambil pesan dinamis dari Kamus Pesan Global SweetAlert
-                if (typeof window.ToastAlert !== 'undefined') {
-                    window.ToastAlert.toast(window.ToastAlert.msg.deletedSuccess, 'success');
-                }
-                
-            } catch (error) {
-                console.error(error);
-                if (typeof window.ToastAlert !== 'undefined') {
-                    window.ToastAlert.toast(window.ToastAlert.msg.deletedFailed, 'error');
-                }
-            } finally {
-                this.isDeleting = false;
-            }
-        }
-     }"
+<!-- Memanggil asyncAction sambil meng-inject state isOpen khusus untuk modal -->
+<div x-data="asyncAction({ isOpen: false })"
      @open-delete-modal.window="isOpen = true"
      x-show="isOpen"
      x-cloak
      x-transition.opacity
      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
-     @keydown.escape.window="if(!isDeleting) isOpen = false">
+     @keydown.escape.window="if(!isProcessing) isOpen = false">
      
-    <div @click.away="if(!isDeleting) isOpen = false"
+    <div @click.away="if(!isProcessing) isOpen = false"
          x-show="isOpen"
          x-transition:enter="transition ease-out duration-150"
          x-transition:enter-start="opacity-0 scale-95"
@@ -70,18 +38,23 @@
         <div class="flex items-center justify-end gap-2">
             <button type="button" 
                     @click="isOpen = false"
-                    :disabled="isDeleting"
+                    :disabled="isProcessing"
                     class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 {{ $cancelText }}
             </button>
             
             <button type="button"
-                    @click="handleConfirm()"
-                    :disabled="isDeleting"
+                    @click="runAction(async () => {
+                        $dispatch('{{ $confirmEvent }}');
+                        await new Promise(resolve => setTimeout(resolve, 800));
+                        isOpen = false;
+                        $dispatch('clear-selection');
+                    }, window.ToastAlert.msg.deletedSuccess, window.ToastAlert.msg.deletedFailed)"
+                    :disabled="isProcessing"
                     class="px-3 py-1.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center min-w-[90px]">
                 
-                <span x-show="!isDeleting">{{ $confirmText }}</span>
-                <x-app.ui.loading-spinner x-show="isDeleting" style="display: none;" />
+                <span x-show="!isProcessing">{{ $confirmText }}</span>
+                <x-app.ui.loading-spinner x-show="isProcessing" style="display: none;" />
                 
             </button>
         </div>
