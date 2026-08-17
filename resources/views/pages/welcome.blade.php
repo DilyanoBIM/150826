@@ -1,4 +1,4 @@
-@extends('layouts.login.app')
+@extends('layouts.auth.app')
 
 @section('title', '090826 - Auth Slide UI (Light Mode)')
 

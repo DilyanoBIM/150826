@@ -1,4 +1,6 @@
-<nav class="flex-1 py-4 bg-slate-900 space-y-1.5 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-sky-500 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-sky-400" 
+<!-- resource/views/layouts/app/partials/sidebar/nav.blade.php -->
+<!-- Tambahkan ID app-sidebar-nav -->
+<nav id="app-sidebar-nav" class="flex-1 py-4 bg-slate-900 space-y-1.5 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-sky-500 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-sky-400" 
      :class="sidebarOpen || windowWidth < 768 ? 'px-4' : 'px-1 flex flex-col items-center'">
 
     @include('layouts.app.partials.sidebar.link', [
@@ -10,9 +12,9 @@
     ])
 
     @include('layouts.app.partials.sidebar.link', [
-        'href' => '#',
+        'href' => route('products.index'), // <-- Ubah disini
         'title' => 'Katalog Produk',
-        'active' => false,
+        'active' => request()->routeIs('products.*'), // <-- Ubah disini agar otomatis aktif
         'text' => 'Katalog Produk',
         'icon' => '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>'
     ])

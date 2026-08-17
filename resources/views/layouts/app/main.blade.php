@@ -1,4 +1,4 @@
-<!-- resource/views/layouts/app/main.blade.php -->
+<!-- resources/views/layouts/app/main.blade.php -->
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -30,8 +30,8 @@
 
     </div>
 
-    @include('network.toast')
-    @include('network.sweetalert')
+    <!-- Komponen Global Feedbacks (Terpusat) -->
+    @include('components.feedback.index')
 
 </body>
 </html>

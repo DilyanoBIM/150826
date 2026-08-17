@@ -13,7 +13,8 @@
         
         <span class="h-4 w-px bg-slate-300 shrink-0 hidden sm:block mx-1"></span>
         
-        <x-app.searchbar 
+        <!-- PERUBAHAN DI SINI: Gunakan x-app.ui.searchbar -->
+        <x-app.ui.searchbar 
             placeholder="Cari data... ( / )"
             wrapperClass="relative hidden md:block"
             iconWrapperClass="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-slate-400"
