@@ -1,3 +1,4 @@
+<!-- resource/views/components/app/ui/button/save.blade.php -->
 @props([
     'text' => 'Simpan',
     'href' => null,

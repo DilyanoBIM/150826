@@ -35,6 +35,14 @@
     'addText'        => 'Tambah Data',
     'addId'          => 'btn-add-data',
     'addEvent'       => 'open-add-modal',
+
+    // --- TAMBAHAN PROPS UNTUK TOMBOL SIMPAN ---
+    'showSave'       => true, // Default false agar tidak muncul di halaman yang tidak butuh
+    'saveHref'       => null,
+    'saveText'       => 'Simpan',
+    'saveId'         => 'btn-save',
+    'saveType'       => 'submit',
+    'saveEvent'      => 'save-data',
 ])
 
 <div {{ $attributes->merge(['class' => 'flex flex-wrap items-center justify-between gap-3 w-full']) }}>
@@ -110,7 +118,8 @@
 
         {{ $rightActions ?? '' }}
 
-        @if(($showRefresh || $showExport || $showPrint || $showImport) && ($showDelete || $showAdd))
+        <!-- Perbarui kondisi separator agar memperhitungkan showSave -->
+        @if(($showRefresh || $showExport || $showPrint || $showImport) && ($showDelete || $showAdd || $showSave))
             <span class="h-4 w-px bg-slate-300 shrink-0 hidden sm:block mx-1"></span>
         @endif
         
@@ -127,6 +136,17 @@
             </button>
         @endif
         
+        <!-- --- TAMBAHAN TOMBOL SIMPAN --- -->
+        @if($showSave)
+            <x-app.ui.button.save 
+                id="{{ $saveId }}"
+                :href="$saveHref" 
+                :text="$saveText" 
+                :type="$saveType"
+                @click="!@js($saveHref) && $dispatch('{{ $saveEvent }}')"
+            />
+        @endif
+
         <!-- Tombol Tambah Data -->
         @if($showAdd)
             <x-app.ui.button.add 
