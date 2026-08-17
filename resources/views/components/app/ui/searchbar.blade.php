@@ -1,4 +1,4 @@
-<!-- resource/views/components/ui/searchbar.blade.php -->
+<!-- resource/views/components/app/ui/searchbar.blade.php -->
 @props([
     'placeholder' => 'Cari transaksi, laporan, atau data...',
     'wrapperClass' => 'relative w-full max-w-2xl bg-white flex items-center justify-center transition-all duration-300',

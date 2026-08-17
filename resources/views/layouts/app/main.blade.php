@@ -24,7 +24,7 @@
 
         @include('layouts.app.partials.sidebar')
 
-        @include('layouts.app.partials.content')
+        @include('layouts.app.partials.contents')
 
         @include('layouts.app.partials.footer')
 

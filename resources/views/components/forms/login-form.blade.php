@@ -1,3 +1,4 @@
+<!-- resource/views/components/forms/login-form.blade.php -->
 <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white" :class="mode === 'login' ? 'block' : 'hidden md:flex'">
     <div x-show="mode === 'login'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="max-w-sm mx-auto w-full space-y-6">
         <div>

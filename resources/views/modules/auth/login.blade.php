@@ -9,11 +9,13 @@
         x-data="{ mode: '{{ $errors->register->any() ? 'register' : 'login' }}' }" 
         class="relative w-full max-w-4xl bg-white border border-slate-200/80 rounded-3xl shadow-xl overflow-hidden min-h-[580px] flex flex-col md:flex-row"
     >
-        <x-login.overlay />
+        <!-- Panggil dari folder feedback -->
+        <x-feedback.overlay />
 
-        <x-login.register-form />
+        <!-- Panggil dari folder forms -->
+        <x-forms.register-form />
 
-        <x-login.login-form />
+        <x-forms.login-form />
     </div>
 
 @endsection

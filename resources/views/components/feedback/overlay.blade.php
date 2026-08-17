@@ -1,3 +1,4 @@
+<!-- resource/views/components/feedback/overlay.blade.php -->
 <div 
     class="hidden md:flex absolute top-0 bottom-0 w-1/2 bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700 p-10 flex-col justify-between z-20 transition-transform duration-500 ease-in-out text-white"
     :class="mode === 'login' ? 'translate-x-0' : 'translate-x-full'"

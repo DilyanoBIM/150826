@@ -6,7 +6,7 @@ use App\Http\Controllers\AuthController;
 // Middleware 'guest' untuk pengguna yang belum login
 Route::middleware('guest')->group(function () {
     Route::get('/', function () {
-        return view('auth.login');
+        return view('modules.auth.login');
     })->name('login');
 
     Route::post('/login', [AuthController::class, 'authenticate'])->name('login.post');

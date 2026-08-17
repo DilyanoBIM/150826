@@ -1,3 +1,4 @@
+<!-- resource/views/layouts/auth/app.blade.php -->
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -10,7 +11,9 @@
 <body class="bg-slate-100 text-slate-800 min-h-screen flex items-center justify-center p-4 antialiased selection:bg-sky-500 selection:text-white">
 
     @yield('content')
-    @include('network.sweetalert') <!-- SweetAlert Global untuk menangkap error Login/Register -->
+    
+    <!-- PERBAIKAN: Gunakan path yang benar untuk memuat Toast dan SweetAlert -->
+    @include('components.feedback.index') 
 
 </body>
 </html>
