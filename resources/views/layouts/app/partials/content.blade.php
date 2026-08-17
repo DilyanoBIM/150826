@@ -1,26 +1,26 @@
 <!-- resource/views/layouts/app/partials/content.blade.php -->
 <div class="col-start-1 md:col-start-2 col-span-1 row-start-2 row-span-3 transition-all duration-300 overflow-hidden">
-    <!-- Tambahkan class relative pada main -->
     <main class="relative h-full bg-[#faf7f2] pt-4 md:pt-6 pl-4 md:pl-6 pr-0 pb-0 overflow-hidden">
 
         <div x-data="{
                 showToolbar: true,
                 showExtras: true,
-                showBulkBar: false,
-                selectedCount: 0,
+                selectedCount: 0, // <-- Menyimpan jumlah item yang dicentang
+                selectedItems: [], // <-- Menyimpan ID item yang dicentang
                 refreshing: false,
                 search: '',
-                isNavigating: false, // <-- State baru untuk loading navigasi
+                isNavigating: false,
                 
                 init() {
+                    // Menerima data dari tabel saat checkbox diklik
                     window.addEventListener('selection-changed', (e) => {
                         this.selectedCount = e.detail.count || 0;
-                        this.showBulkBar = this.selectedCount > 0;
+                        this.selectedItems = e.detail.items || [];
                     });
 
                     window.addEventListener('clear-selection', () => {
-                        this.showBulkBar = false;
                         this.selectedCount = 0;
+                        this.selectedItems = [];
                     });
 
                     window.addEventListener('keydown', (e) => {
@@ -34,7 +34,6 @@
                         this.doRefresh();
                     });
 
-                    // <-- Event Listener Navigasi SPA -->
                     window.addEventListener('start-navigation', () => { this.isNavigating = true; });
                     window.addEventListener('end-navigation', () => { this.isNavigating = false; });
                 },
@@ -62,11 +61,12 @@
                 </div>
             </div>
 
-            <!-- WRAPPER KONTEN DINAMIS (ID target untuk JS) -->
             <div id="app-dynamic-content" class="flex flex-col h-full overflow-hidden w-full">
                 @include('layouts.app.partials.content.header')
                 @include('layouts.app.partials.content.tabs')
-                @include('layouts.app.partials.content.bulk-bar')
+                
+                <!-- HAPUS baris include bulk-bar jika Anda masih memilikinya -->
+
                 @include('layouts.app.partials.content.toolbar')
                 @include('layouts.app.partials.content.stats')
                 @include('layouts.app.partials.content.main-area')
