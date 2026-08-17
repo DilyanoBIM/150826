@@ -1,7 +1,6 @@
-<!-- resource/views/pages/product/index.blade.php -->
+<!-- resources/views/pages/product/index.blade.php -->
 @extends('layouts.app.main')
 
-{{-- Konfigurasi Header & Breadcrumb --}}
 @php
     $pageTitle = 'Katalog Produk';
     $pageSubtitle = 'Manajemen daftar barang, harga jual/beli, dan pantauan stok gudang.';
@@ -9,90 +8,25 @@
     $breadcrumbCurrent = 'Katalog Produk';
 @endphp
 
-{{-- Konfigurasi Toolbar (Tampilkan/Sembunyikan Tombol Sesuai Kebutuhan) --}}
 @php
     $showSaveButton = true; 
     $showDuplicateButton = false;
     $showArchiveButton = false;
     $showUndoRedoButton = false;
     $showHistoryButton = false;
-    $showSyncRight = false;
-    $showSettingsRight = false;
-    $showFullscreenRight = false;
-    $showImportRight = true;
+    $showSyncButton = false;
+    $showSettingsButton = false;
+    $showFullscreenButton = false;
+    $showImportButton = true;
     
-    // Custom Teks Toolbar
     $addText = 'Tambah Produk';
     $searchPlaceholder = 'Cari kode SKU atau nama barang...';
 @endphp
 
 @section('content')
-<!-- 
-    Wrapper Utama Alpine.js
-    Menangani view state, selection table, dan merespons sinyal/event dari Toolbar
--->
-<div 
-    x-data="{ 
-        currentView: 'table',
-        searchQuery: '',
-        selectedItems: [],
-        semuaDipilih: false,
-        items: [1, 2, 3, 4], // ID Dummy dari produk di tabel
-        
-        toggleAll() {
-            this.semuaDipilih = !this.semuaDipilih;
-            this.selectedItems = this.semuaDipilih ? [...this.items] : [];
-        }
-    }"
-    {{-- Memastikan status pemilihan selalu ter-dispatch ketika array berubah --}}
-    x-effect="$dispatch('selection-changed', { count: selectedItems.length, items: selectedItems })"
-
-    {{-- =========================================================
-         UNIFIED EVENT LISTENER: Menangkap Aksi dari Toolbar
-    ========================================================== --}}
-    x-on:main-toolbar-action.window="
-        const { action, payload } = $event.detail;
-        
-        if (action === 'add') { 
-            if(window.ToastAlert) window.ToastAlert.toast('Mengarahkan ke form Tambah Produk...', 'info');
-            // window.location.href = '/produk/create'; 
-        }
-        if (action === 'edit') {
-            if(selectedItems.length === 0) {
-                if(window.ToastAlert) window.ToastAlert.error('Pilih satu produk yang ingin diedit.');
-            } else if(selectedItems.length > 1) {
-                if(window.ToastAlert) window.ToastAlert.error('Hanya dapat mengedit satu produk pada satu waktu.');
-            } else {
-                if(window.ToastAlert) window.ToastAlert.toast('Membuka form edit untuk produk ID: ' + selectedItems[0], 'info');
-            }
-        }
-        if (action === 'delete') { 
-            if(selectedItems.length === 0) {
-                if(window.ToastAlert) window.ToastAlert.error('Pilih produk yang ingin dihapus terlebih dahulu.');
-            } else {
-                if(window.ToastAlert) window.ToastAlert.error('Konfirmasi hapus untuk ' + selectedItems.length + ' produk terpilih.');
-            }
-        }
-        if (action === 'view') { 
-            currentView = payload; 
-        }
-        if (action === 'search') { 
-            searchQuery = payload; 
-        }
-        if (action === 'refresh') { 
-            window.location.reload(); 
-        }
-        if (action === 'export') { 
-            window.open('/produk/export', '_blank'); 
-        }
-        if (action === 'print') {
-            window.print();
-        }
-    "
-    class="w-full space-y-6"
->
+<!-- Mendaftarkan daftar ID item yang tersedia di tabel ini agar 'Select All' berfungsi -->
+<div class="w-full space-y-6" x-init="items = [1, 2, 3, 4]">
     
-    {{-- Section Statistik (Opsional, diletakkan di atas tabel) --}}
     <div class="flex items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div class="flex items-center gap-2 whitespace-nowrap">
             <span class="text-[11px] text-slate-400">Total Produk</span>
@@ -110,10 +44,8 @@
         </div>
     </div>
 
-    {{-- Tampilan Tabel --}}
     <div x-show="currentView === 'table'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
         
-        {{-- Info Pencarian --}}
         <div x-show="searchQuery !== ''" class="mb-4 text-sm text-slate-500">
             Hasil pencarian untuk: <span class="font-bold text-sky-600" x-text="searchQuery"></span>
         </div>
@@ -138,7 +70,6 @@
                         <!-- Item 1 -->
                         <tr class="hover:bg-slate-50 transition-colors" :class="selectedItems.includes(1) ? 'bg-sky-50/50' : ''">
                             <td class="px-4 py-3 text-center">
-                                <!-- x-model untuk sinkronisasi otomatis nilai checkbox ke dalam array selectedItems -->
                                 <input type="checkbox" value="1" x-model.number="selectedItems" class="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer">
                             </td>
                             <td class="px-4 py-3 font-bold text-slate-800">Laptop ASUS ROG</td>
@@ -166,7 +97,6 @@
         </div>
     </div>
 
-    {{-- Tampilan Grid --}}
     <div x-cloak x-show="currentView === 'grid'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 text-center text-slate-500">Laptop ASUS ROG</div>
@@ -174,7 +104,6 @@
         </div>
     </div>
 
-    {{-- Tampilan Board/Kanban --}}
     <div x-cloak x-show="currentView === 'board'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
         <div class="flex gap-4 overflow-x-auto pb-4">
             <div class="bg-slate-100 border border-slate-200 rounded-xl p-4 w-72 shrink-0 h-96">Tersedia</div>

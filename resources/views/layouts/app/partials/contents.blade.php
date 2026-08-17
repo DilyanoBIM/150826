@@ -98,15 +98,14 @@
             </button>
             @endif
 
-            @yield('extra_left_toolbar')
-
             @if($showSearchbar ?? true)
             <x-app.ui.searchbar 
                 placeholder="{{ $searchPlaceholder ?? 'Cari transaksi, laporan, data...' }}"
-                wrapper-class="relative w-40 md:w-52 bg-white flex items-center transition-all duration-300 md:ml-auto"
+                wrapper-class="relative w-40 md:w-52 bg-white flex items-center transition-all duration-300"
                 input-class="w-full pl-7 pr-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 icon-wrapper-class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none text-slate-400"
                 icon-class="w-3.5 h-3.5"
+                @input.debounce.500ms="$dispatch('toolbar-search', $event.target.value)"
             />
             @endif
 
@@ -148,14 +147,14 @@
             </button>
             @endif
 
-            @if($showImportRight ?? true)
+            @if($showImportButton ?? true)
             <button type="button" @click="$dispatch('toolbar-import')" {!! $importAttributes ?? '' !!} class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium rounded-lg transition-colors cursor-pointer">
                 <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                 {{ $importText ?? 'Import' }}
             </button>
             @endif
 
-            @if($showExportRight ?? true)
+            @if($showExportButton ?? true)
             <button type="button" @click="$dispatch('toolbar-export')" {!! $exportAttributes ?? '' !!} class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium rounded-lg transition-colors cursor-pointer">
                 <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 {{ $exportText ?? 'Export' }}
@@ -163,37 +162,37 @@
             </button>
             @endif
 
-            @if($showPrintRight ?? true)
+            @if($showPrintButton ?? true)
             <button type="button" @click="$dispatch('toolbar-print')" {!! $printAttributes ?? '' !!} title="Cetak Data / PDF" class="p-1.5 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-medium rounded-lg transition-colors cursor-pointer">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
             </button>
             @endif
 
-            @if($showSyncRight ?? true)
+            @if($showSyncButton ?? true)
             <button type="button" @click="$dispatch('toolbar-sync')" {!! $syncAttributes ?? '' !!} title="Sinkronisasi Data Real-time" class="p-1.5 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-medium rounded-lg transition-colors cursor-pointer">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
             </button>
             @endif
 
-            @if($showRefreshRight ?? true)
+            @if($showRefreshButton ?? true)
             <button type="button" @click="$dispatch('toolbar-refresh')" {!! $refreshAttributes ?? '' !!} title="Muat Ulang Data" class="p-1.5 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-medium rounded-lg transition-colors cursor-pointer">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             </button>
             @endif
 
-            @if($showFullscreenRight ?? true)
+            @if($showFullscreenButton ?? true)
             <button type="button" @click="$dispatch('toolbar-fullscreen')" {!! $fullscreenAttributes ?? '' !!} title="Mode Layar Penuh" class="p-1.5 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-medium rounded-lg transition-colors cursor-pointer">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0 0l-5-5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
             </button>
             @endif
             
-            @if($showSettingsRight ?? true)
+            @if($showSettingsButton ?? true)
             <button type="button" @click="$dispatch('toolbar-settings')" {!! $settingsAttributes ?? '' !!} title="Pengaturan Tampilan Data" class="p-1.5 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-medium rounded-lg transition-colors cursor-pointer">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             </button>
             @endif
             
-            @yield('extra_right_toolbar')
+            @yield('extra_toolbar')
         </div>
         @endif
 

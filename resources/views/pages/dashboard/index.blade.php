@@ -2,7 +2,6 @@
 
 @extends('layouts.app.main')
 
-{{-- Konfigurasi Header --}}
 @php
     $pageTitle = 'Manajemen Pengguna';
     $pageSubtitle = 'Kelola daftar pengguna, peran, dan akses sistem.';
@@ -10,64 +9,24 @@
     $breadcrumbCurrent = 'Pengguna';
 @endphp
 
-{{-- Konfigurasi Toolbar (Tampilkan/Sembunyikan Tombol) --}}
 @php
-    // Sembunyikan tombol yang tidak diperlukan
     $showSaveButton = true;
     $showDuplicateButton = false;
     $showArchiveButton = false;
     $showUndoRedoButton = false;
     $showHistoryButton = false;
-    $showSyncRight = false;
-    $showSettingsRight = false;
-    $showFullscreenRight = false;
-    $showImportRight = false;
     
-    // Ubah teks tombol jika diperlukan
+    // Pembaruan nama variabel dari *Right menjadi *Button
+    $showSyncButton = false;
+    $showSettingsButton = false;
+    $showFullscreenButton = false;
+    $showImportButton = false; 
+    
     $addText = 'Tambah Pengguna';
     $searchPlaceholder = 'Cari nama atau email...';
 @endphp
 
 @section('content')
-<div
-    x-data="{
-        currentView: 'table',
-        searchQuery: ''
-    }"
-    x-on:main-toolbar-action.window="
-        const { action, payload } = $event.detail;
-        
-        if (action === 'add') { 
-            // Karena modal dihapus, tampilkan info atau arahkan ke halaman form create
-            if(window.ToastAlert) window.ToastAlert.toast('Mengarahkan ke halaman tambah...', 'info');
-            // window.location.href = '/pengguna/create'; 
-        }
-        if (action === 'save') { 
-            if(window.ToastAlert) window.ToastAlert.success('Data pengguna berhasil disimpan!');
-        }
-        if (action === 'view') { 
-            currentView = payload; 
-        }
-        if (action === 'search') { 
-            searchQuery = payload; 
-        }
-        if (action === 'delete') { 
-            if(window.ToastAlert) window.ToastAlert.error('Pilih data yang ingin dihapus terlebih dahulu.');
-        }
-        if (action === 'refresh') { 
-            window.location.reload(); 
-        }
-        if (action === 'export') { 
-            window.open('/data/export', '_blank'); 
-        }
-        if (action === 'print') {
-            window.print();
-        }
-    "
-    class="w-full"
->
-    
-    {{-- Tampilan berdasarkan pilihan (Table / Grid / Board) --}}
     <div x-show="currentView === 'table'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
         <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
             <div class="p-8 text-center text-slate-500">
@@ -93,6 +52,4 @@
             <div class="bg-slate-100 border border-slate-200 rounded-xl p-4 w-72 shrink-0 h-96">Kolom 3</div>
         </div>
     </div>
-
-</div>
 @endsection

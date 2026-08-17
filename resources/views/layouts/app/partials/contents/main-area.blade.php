@@ -1,30 +1,8 @@
 <!-- resources/views/layouts/app/partials/contents/main-area.blade.php -->
 
-{{--
-    Partial ini adalah "jembatan" antara toolbar (yang men-dispatch event
-    toolbar-add, toolbar-save, toolbar-edit, dst) dengan area konten (<main>).
-
-    Cara kerja:
-    1. Wrapper x-data="mainArea()" MENDENGARKAN semua event yang di-dispatch
-       toolbar lewat $dispatch('toolbar-xxx') di window.
-    2. Setiap event yang tertangkap akan diteruskan (re-dispatch) sebagai
-       event lokal 'main-toolbar-action' di dalam scope <main> itu sendiri
-       (TIDAK di window), supaya konten yang di-@yield('content') bisa
-       menangkapnya cukup dengan:
-         <div x-on:main-toolbar-action="if ($event.detail.action === 'add') ..."> 
-       tanpa perlu tahu detail nama event toolbar aslinya.
-    3. Jika halaman memakai Livewire, event juga otomatis diteruskan ke
-       method Livewire (opsional) lewat $wire.dispatch(), sehingga
-       Livewire component di dalam @yield('content') bisa punya:
-         #[On('main-toolbar-action')]
-         public function onToolbarAction($action, $payload = null) { ... }
---}}
-
 <div
     class="flex-1 flex flex-row overflow-hidden relative {{ $mainAreaWrapperClass ?? '' }}"
     x-data="mainArea({ debug: {{ $mainAreaDebug ?? 'false' }} })"
-
-    {{-- === Daftar event yang "didengarkan" dari toolbar === --}}
     x-on:toolbar-add.window="handle('add', $event.detail)"
     x-on:toolbar-save.window="handle('save', $event.detail)"
     x-on:toolbar-show.window="handle('show', $event.detail)"
@@ -46,6 +24,7 @@
     x-on:toolbar-refresh.window="handle('refresh', $event.detail)"
     x-on:toolbar-fullscreen.window="handle('fullscreen', $event.detail)"
     x-on:toolbar-settings.window="handle('settings', $event.detail)"
+    x-on:toolbar-showFooter.window="handle('footer', $event.detail)"
 >
 
     <main
@@ -88,27 +67,76 @@
     function mainArea(config = {}) {
         return {
             debug: config.debug ?? false,
+            currentView: 'table',
+            searchQuery: '',
+            selectedItems: [],
+            semuaDipilih: false,
+            items: [],
+            
+            init() {
+                this.$watch('selectedItems', (value) => {
+                    this.$dispatch('selection-changed', { count: value.length, items: value });
+                });
+            },
 
-            /**
-             * Dipanggil setiap kali toolbar men-dispatch salah satu event toolbar-*.
-             * action  : string, mis. 'add', 'save', 'edit', 'view'
-             * payload : mixed, isi $event.detail asli (mis. untuk toolbar-view: 'table'/'grid'/'board')
-             */
+            toggleAll() {
+                this.semuaDipilih = !this.semuaDipilih;
+                this.selectedItems = this.semuaDipilih ? [...this.items] : [];
+            },
+            
             handle(action, payload = null) {
                 if (this.debug) {
                     console.log('[main-area] toolbar action tertangkap:', action, payload);
                 }
 
-                // 1) Teruskan sebagai event LOKAL (tidak sampai ke window lagi)
-                //    supaya konten di dalam <main> bisa menangkapnya tanpa
-                //    perlu tahu nama event toolbar aslinya.
-                this.$dispatch('main-toolbar-action', { action, payload });
+                if (action === 'add') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Mengarahkan ke halaman tambah...', 'info');
+                }
+                if (action === 'save') { 
+                    if(window.ToastAlert) window.ToastAlert.success('Data berhasil disimpan!');
+                }
+                if (action === 'view') { 
+                    this.currentView = payload; 
+                }
+                if (action === 'search') { 
+                    this.searchQuery = payload; 
+                }
+                if (action === 'refresh') { 
+                    window.location.reload(); 
+                }
+                if (action === 'export') { 
+                    window.open('/data/export', '_blank'); 
+                }
+                if (action === 'print') {
+                    window.print();
+                }
 
-                // 2) Jika halaman ini di-render di dalam komponen Livewire,
-                //    teruskan juga ke Livewire (opsional, aman jika Livewire tidak ada).
+                if (action === 'edit') {
+                    if(this.selectedItems.length === 0) {
+                        if(window.ToastAlert) window.ToastAlert.error('Pilih satu data yang ingin diedit.');
+                        return; 
+                    } else if(this.selectedItems.length > 1) {
+                        if(window.ToastAlert) window.ToastAlert.error('Hanya dapat mengedit satu data pada satu waktu.');
+                        return; 
+                    } else {
+                        if(window.ToastAlert) window.ToastAlert.toast('Membuka form edit untuk ID: ' + this.selectedItems[0], 'info');
+                    }
+                }
+                
+                if (action === 'delete') { 
+                    if(this.selectedItems.length === 0) {
+                        if(window.ToastAlert) window.ToastAlert.error('Pilih data yang ingin dihapus terlebih dahulu.');
+                        return; 
+                    } else {
+                        if(window.ToastAlert) window.ToastAlert.error('Konfirmasi hapus untuk ' + this.selectedItems.length + ' data terpilih.');
+                    }
+                }
+
+                this.$dispatch('main-toolbar-action', { action, payload, selected: this.selectedItems });
+
                 if (this.$wire) {
                     try {
-                        this.$wire.dispatch('main-toolbar-action', { action, payload });
+                        this.$wire.dispatch('main-toolbar-action', { action, payload, selected: this.selectedItems });
                     } catch (e) {
                         if (this.debug) console.warn('[main-area] gagal forward ke Livewire:', e);
                     }
