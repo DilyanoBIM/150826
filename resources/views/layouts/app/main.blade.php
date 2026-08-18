@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Sistem Informasi Akuntansi TDG')</title>
+    <title>@yield('title', 'Sistem ECommerce')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-[#faf7f2] text-slate-800 antialiased font-sans min-h-screen selection:bg-amber-500 selection:text-white">

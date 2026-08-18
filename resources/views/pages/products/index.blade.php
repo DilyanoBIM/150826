@@ -19,7 +19,6 @@
     $showFullscreenButton = false;
     $showImportButton = true;
     
-    $addText = 'Tambah Produk';
     $searchPlaceholder = 'Cari kode SKU atau nama barang...';
 @endphp
 
