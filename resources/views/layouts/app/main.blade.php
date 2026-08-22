@@ -30,7 +30,6 @@
 
     </div>
 
-    <!-- Komponen Global Feedbacks (Terpusat) -->
     @include('components.feedback.index')
 
 </body>

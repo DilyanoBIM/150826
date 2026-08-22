@@ -1,5 +1,4 @@
 <!-- resources/views/layouts/app/partials/contents/main-area.blade.php -->
-
 <div
     class="flex-1 flex flex-row overflow-hidden relative {{ $mainAreaWrapperClass ?? '' }}"
     x-data="mainArea({ debug: {{ $mainAreaDebug ?? 'false' }} })"
@@ -34,7 +33,15 @@
         class="relative w-full h-full overflow-y-auto overflow-x-hidden flex-1 {{ $mainContentClass ?? '' }}"
         data-current-view="{{ $currentView ?? 'table' }}"
     >
-        <div class="w-full p-4 md:p-6 lg:p-8">
+        <div x-cloak x-show="isRefreshing" 
+             x-transition.opacity.duration.300ms
+             class="absolute inset-0 z-50 flex items-center justify-center bg-slate-50/60 backdrop-blur-[2px]">
+            <div class="bg-white border border-slate-200 shadow-xl rounded-full px-6 py-3 flex items-center gap-3 transform scale-100">
+                <x-app.ui.loading-spinner alpine-text="loadingText" icon-class="w-5 h-5 text-blue-600" class="text-slate-700 font-medium text-sm" />
+            </div>
+        </div>
+
+        <div id="main-inner-content" x-ref="innerContent" class="w-full p-4 md:p-6 lg:p-8 transition-opacity duration-300" :class="isRefreshing ? 'opacity-40 pointer-events-none' : ''">
             @yield('content')
             {{ $slot ?? '' }}
         </div>
@@ -72,7 +79,9 @@
             selectedItems: [],
             semuaDipilih: false,
             items: [],
-            
+            isRefreshing: false,
+            loadingText: 'Memproses...',
+
             init() {
                 this.$watch('selectedItems', (value) => {
                     this.$dispatch('selection-changed', { count: value.length, items: value });
@@ -83,32 +92,19 @@
                 this.semuaDipilih = !this.semuaDipilih;
                 this.selectedItems = this.semuaDipilih ? [...this.items] : [];
             },
-            
-            handle(action, payload = null) {
-                if (this.debug) {
-                    console.log('[main-area] toolbar action tertangkap:', action, payload);
-                }
 
-                if (action === 'add') { 
-                    if(window.ToastAlert) window.ToastAlert.toast('Mengarahkan ke halaman tambah...', 'info');
+            dispatchAction(action, payload) {
+                this.$dispatch('main-toolbar-action', { action, payload, selected: this.selectedItems });
+                if (this.$wire) {
+                    try {
+                        this.$wire.dispatch('main-toolbar-action', { action, payload, selected: this.selectedItems });
+                    } catch (e) {}
                 }
-                if (action === 'save') { 
-                    if(window.ToastAlert) window.ToastAlert.success('Data berhasil disimpan!');
-                }
-                if (action === 'view') { 
-                    this.currentView = payload; 
-                }
-                if (action === 'search') { 
-                    this.searchQuery = payload; 
-                }
-                if (action === 'refresh') { 
-                    window.location.reload(); 
-                }
-                if (action === 'export') { 
-                    window.open('/data/export', '_blank'); 
-                }
-                if (action === 'print') {
-                    window.print();
+            },
+
+            async handle(action, payload = null) {
+                if (this.debug) {
+                    console.log(action, payload);
                 }
 
                 if (action === 'edit') {
@@ -118,29 +114,128 @@
                     } else if(this.selectedItems.length > 1) {
                         if(window.ToastAlert) window.ToastAlert.error('Hanya dapat mengedit satu data pada satu waktu.');
                         return; 
-                    } else {
-                        if(window.ToastAlert) window.ToastAlert.toast('Membuka form edit untuk ID: ' + this.selectedItems[0], 'info');
                     }
                 }
-                
-                if (action === 'delete') { 
+                else if (action === 'delete') { 
                     if(this.selectedItems.length === 0) {
                         if(window.ToastAlert) window.ToastAlert.error('Pilih data yang ingin dihapus terlebih dahulu.');
                         return; 
-                    } else {
-                        if(window.ToastAlert) window.ToastAlert.error('Konfirmasi hapus untuk ' + this.selectedItems.length + ' data terpilih.');
                     }
                 }
 
-                this.$dispatch('main-toolbar-action', { action, payload, selected: this.selectedItems });
+                if (action === 'search') { 
+                    this.searchQuery = payload; 
+                    if(window.ToastAlert) {
+                        if(payload !== '') window.ToastAlert.toast('Mencari data: ' + payload, 'info');
+                        else window.ToastAlert.toast('Mereset pencarian', 'info');
+                    }
+                    this.dispatchAction(action, payload);
+                    return; 
+                }
 
-                if (this.$wire) {
+                if (action === 'refresh') this.loadingText = 'Memuat ulang data...';
+                else if (action === 'export') this.loadingText = 'Menyiapkan file ekspor...';
+                else if (action === 'sync') this.loadingText = 'Menyinkronkan server...';
+                else this.loadingText = 'Memproses...';
+
+                this.isRefreshing = true;
+
+                if (action === 'refresh') { 
+                    this.$dispatch('main-refresh-start');
                     try {
-                        this.$wire.dispatch('main-toolbar-action', { action, payload, selected: this.selectedItems });
-                    } catch (e) {
-                        if (this.debug) console.warn('[main-area] gagal forward ke Livewire:', e);
+                        const response = await fetch(window.location.href, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        if (!response.ok) throw new Error('Network error');
+                        
+                        const html = await response.text();
+                        const doc = new DOMParser().parseFromString(html, 'text/html');
+                        const newContent = doc.querySelector('#main-inner-content');
+                        
+                        if (newContent) {
+                            this.$refs.innerContent.innerHTML = newContent.innerHTML;
+                            if(window.ToastAlert) window.ToastAlert.success('Data berhasil dimuat ulang!');
+                        } else {
+                            window.location.reload();
+                        }
+                    } catch (error) {
+                        if(window.ToastAlert) window.ToastAlert.error('Gagal memuat ulang data.');
+                    } finally {
+                        this.isRefreshing = false;
+                        this.$dispatch('main-refresh-end');
+                        this.dispatchAction(action, payload);
                     }
+                    return;
                 }
+
+                await new Promise(resolve => setTimeout(resolve, 400));
+
+                if (action === 'add') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Mengarahkan ke halaman tambah...', 'info');
+                }
+                else if (action === 'save') { 
+                    if(window.ToastAlert) window.ToastAlert.success('Data berhasil disimpan!');
+                }
+                else if (action === 'show') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Menampilkan detail data terpilih.', 'info');
+                }
+                else if (action === 'view') { 
+                    this.currentView = payload; 
+                    if(window.ToastAlert) window.ToastAlert.toast('Tampilan diubah ke mode ' + payload, 'info');
+                }
+                else if (action === 'export') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Mengunduh file ekspor...', 'success');
+                    window.open('/data/export', '_blank'); 
+                }
+                else if (action === 'print') {
+                    if(window.ToastAlert) window.ToastAlert.toast('Membuka jendela cetak...', 'info');
+                    setTimeout(() => window.print(), 300);
+                }
+                else if (action === 'duplicate') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Menduplikasi data terpilih...', 'info');
+                }
+                else if (action === 'archive') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Mengarsipkan data terpilih...', 'info');
+                }
+                else if (action === 'undo') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Membatalkan aksi terakhir...', 'info');
+                }
+                else if (action === 'redo') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Mengulang aksi terakhir...', 'info');
+                }
+                else if (action === 'history') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Menampilkan riwayat aktivitas...', 'info');
+                }
+                else if (action === 'date-filter') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Membuka filter rentang waktu...', 'info');
+                }
+                else if (action === 'filter') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Membuka pengaturan filter lanjutan...', 'info');
+                }
+                else if (action === 'columns') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Membuka pengaturan visibilitas kolom...', 'info');
+                }
+                else if (action === 'import') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Membuka form import data...', 'info');
+                }
+                else if (action === 'sync') { 
+                    if(window.ToastAlert) window.ToastAlert.success('Data berhasil disinkronkan!');
+                }
+                else if (action === 'fullscreen') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Mengubah mode layar...', 'info');
+                }
+                else if (action === 'settings') { 
+                    if(window.ToastAlert) window.ToastAlert.toast('Membuka menu pengaturan...', 'info');
+                }
+                else if (action === 'edit') {
+                    if(window.ToastAlert) window.ToastAlert.toast('Membuka form edit untuk ID: ' + this.selectedItems[0], 'info');
+                }
+                else if (action === 'delete') { 
+                    if(window.ToastAlert) window.ToastAlert.error('Konfirmasi hapus untuk ' + this.selectedItems.length + ' data terpilih.');
+                }
+
+                this.isRefreshing = false;
+                this.dispatchAction(action, payload);
             },
         };
     }
